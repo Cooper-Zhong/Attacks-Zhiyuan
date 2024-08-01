@@ -1,13 +1,8 @@
 import torch
-from torch import Tensor
 from torch.utils.data import Dataset
 import numpy as np
-import matplotlib.pyplot as plt
-import copy
 
-# Custom Dataset class for the poisoned dataset required for training. The two types of triggers are specified here,
-# where the first type is a trigger with a target label and trigger2 is the all-to-all attack trigger, where all the
-# ground truth labels i are changed to label i+1
+# Custom Dataset class for the poisoned dataset.
 
 
 class PoisonedDataset(Dataset):
@@ -126,10 +121,3 @@ class PoisonedDataset(Dataset):
 # Simple reshape before feeding tensor for training
 def reshape_before_training(data):
     return np.array(data.reshape(len(data), data.shape[3], data.shape[2], data.shape[1]))
-
-
-def vis_img(array):
-    plt.imshow(array)
-    plt.show()
-
-

@@ -1,6 +1,5 @@
 import torch
 from tqdm import tqdm
-from sklearn.metrics import classification_report
 from badnet_model import BadNet
 
 

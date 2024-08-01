@@ -2,7 +2,7 @@ from poisoned_dataset import PoisonedDataset
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader, random_split
 from torchvision import datasets
-import torch
+
 
 def download_data(data_name, download, dataset_path):
     if data_name == 'mnist':
