@@ -96,8 +96,8 @@ class PoisonedDataset(Dataset):
             new_targets = torch.clone(targets)
 
         trig_idx = np.random.permutation(len(new_data))[0: int(len(new_data) * proportion)]
-        if len(new_data.shape) == 3:  #Check whether there is the singleton dimension missing abd add it in the array, ie. for mnist 28x28x1 and for cifar 32x32x1
-            new_data = np.expand_dims(new_data, axis=3)
+        if len(new_data.shape) == 3: # for mnist 28x28x1 and for cifar 32x32x3
+            new_data = new_data.unsqueeze(-1)
         width, height, channels = new_data.shape[1:]
         for i in trig_idx: 
             # change ground truth label to i+1
@@ -111,8 +111,7 @@ class PoisonedDataset(Dataset):
                 new_data[i, width-2, height-4, c] = 255
                 new_data[i, width-2, height-2, c] = 255
 
-        new_data = reshape_before_training(new_data
-                                           )
+        new_data = reshape_before_training(new_data)
         print("Total: %d Poisoned Imgs, %d Clean Imgs (%.2f)" % (len(trig_idx), len(new_data)-len(trig_idx), proportion))
         # return Tensor
         return torch.Tensor(new_data), new_targets
