@@ -3,8 +3,7 @@ from torch import nn
 from torch import optim
 import os
 from badnet_model import BadNet
-from util import load_init_data, backdoor_data_loader
-from train_eval import train, eval
+from util import load_init_data, backdoor_data_loader, train, eval
 import argparse
 
 # Main file for the training set poisoning based on paper BadNets.
