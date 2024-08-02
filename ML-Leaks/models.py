@@ -53,11 +53,9 @@ class Attacker(nn.Module):
         self.hidden_size = hidden_size
         self.fc1 = nn.Linear(self.input_size, self.hidden_size)
         self.fc2 = nn.Linear(self.hidden_size, output)
-        # self.sigmoid = nn.Sigmoid() 
         # no softmax here, use cross-entropy loss later
 
     def forward(self, x):
         hidden = self.fc1(x)
         output = self.fc2(hidden)
-        # output = self.sigmoid(output)
         return output

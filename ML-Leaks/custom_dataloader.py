@@ -36,9 +36,6 @@ def dataloader(dataset_name="cifar", batch_size_train=8, batch_size_test=64):
     target_train_dataset = Subset(trainset, indices[2 * split:3 * split])
     target_out_dataset = Subset(trainset, indices[3 * split:])
 
-    target_train_data_list = [(img, label) for img, label in target_train_dataset]
-    target_out_data_list = [(img, label) for img, label in target_out_dataset]
-
     shadow_train_loader = DataLoader(shadow_train_dataset, batch_size=batch_size_train, shuffle=False, num_workers=2)
     shadow_out_loader = DataLoader(shadow_out_dataset, batch_size=batch_size_train, shuffle=False, num_workers=2)
     target_train_loader = DataLoader(target_train_dataset, batch_size=batch_size_train, shuffle=False, num_workers=2)

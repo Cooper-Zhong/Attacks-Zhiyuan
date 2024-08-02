@@ -14,16 +14,11 @@ parser.add_argument('--dataset', default='mnist', help='"cifar" or "mnist".')
 parser.add_argument('--batch_size', default=64, type=int, help='The batch size used for training.')
 parser.add_argument('--epoch', default=30, type=int, help='Number of epochs for shadow and target model.')
 parser.add_argument('--attack_epoch', default=10, type=int, help='Number of epochs for attack model.')
-parser.add_argument('--only_eval', default=False, type=bool, help='If true, only evaluate trained loaded models.')
-parser.add_argument('--save_new_models', default=False, type=bool, help='If true, trained models will be saved.')
 args = parser.parse_args()
 
 
 def main():
     dataset_name = args.dataset
-    shadow_path, target_path, attack_path = "./models/shadow_" + str(dataset_name) + ".pth", \
-                                            "./models/target_" + str(dataset_name) + ".pth", \
-                                            "./models/attack_" + str(dataset_name) + ".pth"
     
     if dataset_name == "cifar":
         input_size = 3
@@ -55,72 +50,34 @@ def main():
     attack_optim = optim.Adam(attacker.parameters(), lr=0.01)
 
     # train target model
-    if not args.only_eval:
-        print("start training target model: ")
-        for epoch in range(n_epochs):
-            loss_train_target = train_target(target_model, target_train_loader, target_loss, target_optim)
-            # Evaluate model after every five epochs
-            if (epoch + 1) % 3 == 0:
-                accuracy_train_target, _, _, _ = eval_target(target_model, target_train_loader)
-                accuracy_test_target, _, _, _  = eval_target(target_model, testloader)
-                print("Target: epoch[%d/%d] Train loss: %.4f training set accuracy: %.4f  test set accuracy: %.4f"
-                      % (epoch + 1, n_epochs, loss_train_target, accuracy_train_target, accuracy_test_target))
-            if args.save_new_models:
-                if not os.path.exists("./models"):
-                    os.mkdir("./models")
-                torch.save(target_model.state_dict(), target_path)
+    print("start training target model: ")
+    for epoch in range(n_epochs):
+        loss_train_target = train_target(target_model, target_train_loader, target_loss, target_optim)
+        # Evaluate model after every five epochs
+        if (epoch + 1) % 3 == 0:
+            accuracy_train_target, _, _, _ = eval_target(target_model, target_train_loader)
+            accuracy_test_target, _, _, _  = eval_target(target_model, testloader)
+            print("Target: epoch[%d/%d] Train loss: %.4f training set accuracy: %.4f  test set accuracy: %.4f"
+                    % (epoch + 1, n_epochs, loss_train_target, accuracy_train_target, accuracy_test_target))
 
     # train shadow model
-    if not args.only_eval:
-        print("start training shadow model: ")
-        for epoch in range(n_epochs):
-            loss_train_shadow = train_target(shadow_model, shadow_train_loader, shadow_loss, shadow_optim)
-            if (epoch+1) % 3 == 0:
-                accuracy_train_shadow, _, _, _  = eval_target(shadow_model, shadow_train_loader)
-                accuracy_test_shadow, _, _, _  = eval_target(shadow_model, testloader)
-                print("Shadow: epoch[%d/%d] Train loss: %.4f training set accuracy: %.4f  test set accuracy: %.4f"
-                      % (epoch + 1, n_epochs, loss_train_shadow, accuracy_train_shadow, accuracy_test_shadow))
-            if args.save_new_models:
-                if not os.path.exists("./models"):
-                    os.mkdir("./models")
-                torch.save(shadow_model.state_dict(), "./models/shadow_" + str(dataset_name) + ".pth")
-
+    print("start training shadow model: ")
+    for epoch in range(n_epochs):
+        loss_train_shadow = train_target(shadow_model, shadow_train_loader, shadow_loss, shadow_optim)
+        if (epoch+1) % 3 == 0:
+            accuracy_train_shadow, _, _, _  = eval_target(shadow_model, shadow_train_loader)
+            accuracy_test_shadow, _, _, _  = eval_target(shadow_model, testloader)
+            print("Shadow: epoch[%d/%d] Train loss: %.4f training set accuracy: %.4f  test set accuracy: %.4f"
+                    % (epoch + 1, n_epochs, loss_train_shadow, accuracy_train_shadow, accuracy_test_shadow))
 
     # train attack model
-    if not args.only_eval:
-        print("start training attacker model")
-        for epoch in range(attack_epochs):
-            loss_attack = train_attacker(attacker, shadow_model, shadow_train_loader, shadow_out_loader, attack_optim, attack_loss, num_posterior=3)
-            if (epoch+1) % 1 == 0:
-                attack_acc, prec, recall = eval_attacker(attacker, target_model, target_train_loader, target_out_loader, num_posterior=3)
-                print("Attacker: epoch[%d/%d]  Train loss: %.4f  Acc: %.4f Prec: %.4f Recall: %.4f"
-                        % (epoch + 1, attack_epochs, loss_attack, attack_acc, prec, recall))
-                if args.save_new_models:
-                    if not os.path.exists("./models"):
-                        os.mkdir("./models")
-                    torch.save(attacker.state_dict(), attack_path)
-
-    # Only evaluate
-    # if args.only_eval:
-    #     if os.path.exists(shadow_path):
-    #         print("Load shadow model")
-    #         shadow_model.load_state_dict(torch.load(shadow_path))
-    #     if os.path.exists(target_path):
-    #         print("Load target model")
-    #         target_model.load_state_dict(torch.load(target_path))
-    #     if os.path.exists(attack_path):
-    #         print("Load attack model")
-    #         attacker.load_state_dict(torch.load(attack_path))
-
-    #     print("eval target model:")
-    #     target_acc, target_prec, target_recall, target_f1 = eval_target(target_model, testloader)
-    #     print('Accuracy: %.4f, Precision: %.4f, Recall: %.4f, F1: %.4f' % (target_acc, target_prec, target_recall, target_f1))
-    #     print("eval shadow model:")
-    #     shadow_acc, shadow_prec, shadow_recall, shadow_f1 = eval_target(shadow_model, testloader)
-    #     print('Accuracy: %.4f, Precision: %.4f, Recall: %.4f, F1: %.4f' % (shadow_acc, shadow_prec, shadow_recall, shadow_f1))
-    #     print("eval attacker:")
-    #     attack_acc, prec, recall = eval_attacker(attacker, target_model, target_train_loader, target_out_loader, num_posterior=3)
-    #     print('Accuracy: %.2f Precision: %.2f Recall: %.2f' % (attack_acc, prec, recall))
+    print("start training attacker model")
+    for epoch in range(attack_epochs):
+        loss_attack = train_attacker(attacker, shadow_model, shadow_train_loader, shadow_out_loader, attack_optim, attack_loss, num_posterior=3)
+        if (epoch+1) % 1 == 0:
+            attack_acc, prec, recall = eval_attacker(attacker, target_model, target_train_loader, target_out_loader, num_posterior=3)
+            print("Attacker: epoch[%d/%d]  Train loss: %.4f  Acc: %.4f Prec: %.4f Recall: %.4f"
+                    % (epoch + 1, attack_epochs, loss_attack, attack_acc, prec, recall))
 
 
 if __name__ == '__main__':
