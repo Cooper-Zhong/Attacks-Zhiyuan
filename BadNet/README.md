@@ -6,9 +6,7 @@ PyTorch implementations of `Badnets: Identifying vulnerabilities in the machine 
 
 ```
 cd BadNet
-conda create -n badnet python=3.7
-conda activate badnet
-pip install -r requirements.txt
+conda activate attacks
 ```
 
 ## To Run
